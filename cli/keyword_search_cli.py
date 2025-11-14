@@ -3,10 +3,24 @@
 import argparse
 import json
 import string
+from typing import List
+
+
+# translation table to remove punctuation
+punc_table = str.maketrans("", "", string.punctuation)
+
+def process_string(input_str: str) -> List[str]:
+    
+    make_case_insesitive = input_str.lower()
+    remove_punctuation = make_case_insesitive.translate(punc_table)
+    tokenized = remove_punctuation.split()
+    for i, s in enumerate(tokenized):
+        if s == "":
+            del tokenized[i]
+    return tokenized
 
 def main() -> None:
-    # translation table to remove punctuation
-    punc_table = str.maketrans("", "", string.punctuation)
+
 
     with open("data/movies.json", 'r') as f:
         movies_data = json.load(f)
@@ -23,12 +37,15 @@ def main() -> None:
         case "search":
             print(f"Searching for: {args.query}")
             movie_count = 1
+
             for movie in movies_data["movies"]:
-                if args.query.lower().translate(punc_table) in movie["title"].lower().translate(punc_table):
-                    print(f"{str(movie_count)}. {movie["title"]}")
-                    movie_count += 1
-                if movie_count == 6:
-                    break
+                processed_query = process_string(args.query)
+                processed_movie_str = ("").join(process_string(movie["title"]))
+                # check if any of the tokens match any in the movie db
+                for token in processed_query:
+                    if token in processed_movie_str:
+                        print(f"{str(movie_count)}. {movie["title"]}")
+                        movie_count += 1
         case _:
             parser.print_help()
 
