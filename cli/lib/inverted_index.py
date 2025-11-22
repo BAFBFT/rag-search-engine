@@ -21,7 +21,7 @@ class InvertedIndex():
         IDs = []
         for id in self.index[term]:
             IDs.append(id)
-        return IDs.sort()
+        return sorted(IDs)
     
     def build(self):
         movies = load_movies()
@@ -32,7 +32,10 @@ class InvertedIndex():
             self.docmap[id] = (title + description)
 
     def save(self):
-        cache_path = Path.cwd().parent / "cache"
+        cache_path = Path("cache")
         cache_path.mkdir(parents=True, exist_ok=True)
-        pickle.dump(self.index, cache_path / "index.pkl")
-        pickle.dump(self.docmap, cache_path / "docmap.pkl")
+        with open(cache_path / "index.pkl", 'wb') as f:
+            pickle.dump(self.index, f)
+        with open(cache_path / "docmap.pkl", 'wb') as f:
+            pickle.dump(self.docmap, f)
+        
