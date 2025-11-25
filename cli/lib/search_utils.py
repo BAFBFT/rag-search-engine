@@ -6,6 +6,7 @@ from typing import List
 PROJECT_ROOT = Path(__file__).parent.parent.parent
 STOPWORDS_PATH = PROJECT_ROOT / "data" / "stopwords.txt"
 DEFAULT_SEARCH_LIMIT = 5
+CACHE_PATH = PROJECT_ROOT / "cache"
 
 def load_movies() -> List[dict]:
     with open("data/movies.json", 'r') as f:

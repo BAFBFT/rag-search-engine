@@ -1,6 +1,6 @@
 import string 
 
-from typing import List
+from typing import DefaultDict, List, Set
 from .search_utils import DEFAULT_SEARCH_LIMIT, load_movies, load_stopwords
 from nltk.stem import PorterStemmer
 
@@ -21,6 +21,26 @@ def search_command(query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> List[dict]:
             break
     return results
 
+def search_index(query: str, 
+                 index: DefaultDict[str, Set[int]], 
+                 docmap: DefaultDict[int, dict],
+                 limit: int = DEFAULT_SEARCH_LIMIT) -> List[dict]:
+    
+    movie_count = 0
+    tokenized_query = tokenize(query)
+    results = []
+    search_space = set()
+    for token in tokenized_query:
+        if token in index:
+            search_space.update(index[token])
+
+    for id in sorted(list(search_space)):
+        results.append(docmap[id])
+        movie_count += 1
+        if movie_count >= limit:
+            return results
+
+    return results
 
 def preprocess_text(text: str) -> str:
     # translation table to remove punctuation

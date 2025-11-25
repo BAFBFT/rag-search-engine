@@ -6,7 +6,7 @@ import string
 from typing import List
 from nltk.stem import PorterStemmer
 
-from lib.keyword_search import search_command
+from lib.keyword_search import search_command, search_index
 from lib.inverted_index import InvertedIndex
 
 def main() -> None:
@@ -24,16 +24,16 @@ def main() -> None:
     
     match args.command:
         case "search":
+            index = InvertedIndex()
+            index.load()
             print(f"Searching for: {args.query}")
-            results = search_command(args.query)
+            results = search_index(args.query, index.index, index.docmap)
             for i, res in enumerate(results, 1):
-                print(f"{i}. {res}")
+                print(f"{i}. {res["title"]}, ID: {res["id"]}")
         case "build":
             index = InvertedIndex()
             index.build()
             index.save()
-            docs = index.get_documents("merida")
-            print(f"First document for token 'merida' = {docs[0]}")
         case _:
             parser.print_help()
 
