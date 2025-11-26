@@ -18,7 +18,11 @@ def main() -> None:
     search_parser = subparsers.add_parser("search", help="Search movies using BM25")
     search_parser.add_argument("query", type=str, help="Search query")
 
-    search_parser = subparsers.add_parser("build", help="Build an inverted index from movies.json")
+    subparsers.add_parser("build", help="Build an inverted index from movies.json")
+
+    tf_parser = subparsers.add_parser("tf", help="Get the term frequency of a term")
+    tf_parser.add_argument("doc_ID", type=int, help="document ID")
+    tf_parser.add_argument("term", type=str, help="Term for querying")
 
     args = parser.parse_args()
     
@@ -30,6 +34,16 @@ def main() -> None:
             results = search_index(args.query, index.index, index.docmap)
             for i, res in enumerate(results, 1):
                 print(f"{i}. {res["title"]}, ID: {res["id"]}")
+        case "tf":
+            index = InvertedIndex()
+            index.load()
+            print(index.term_frequencies[424])
+            print(f"Searching for: {args.term} in document with ID {args.doc_ID}")
+            tf = index.get_tf(args.doc_ID, args.term)
+            if tf > 0:
+                print(f"The term, {args.term} appears {tf} in the document with ID {args.doc_ID}.")
+            else:
+                print(tf)
         case "build":
             index = InvertedIndex()
             index.build()
