@@ -1,3 +1,4 @@
+import math
 import pickle
 from collections import defaultdict, Counter
 from typing import DefaultDict, List, Set
@@ -16,7 +17,7 @@ class InvertedIndex():
         tokens = tokenize(text)
         for token in tokens:
             self.index[token].add(doc_id)
-            self.term_frequencies[doc_id].update([token])
+        self.term_frequencies[doc_id].update(tokens)
 
     def get_documents(self, term: str) -> List[int]:
         term = term.lower()
@@ -32,10 +33,19 @@ class InvertedIndex():
         term_frequency = self.term_frequencies[doc_id][tokens[0]]
         return term_frequency
 
+    def get_idf(self, term: str) -> float:
+        tokens = tokenize(term)
+        if len(tokens) > 1:
+            raise Exception("Only one token expected")        
+        total_doc_count = len(self.docmap)
+        term_match_doc_count = len(self.index.get(tokens[0], set()))
+        idf = math.log((total_doc_count + 1) / (term_match_doc_count + 1))
+        return idf
+    
     def build(self) -> None:
         movies = load_movies()
         for movie in movies:
-            id, title, description = movie["id"], movie['title'], movie['description']
+            id, title, description = movie["id"], movie["title"], movie["description"]
             input_text = f"{title} {description}"
             self.__add_document(id, input_text)
             self.docmap[id] = movie
