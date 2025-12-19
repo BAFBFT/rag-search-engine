@@ -1,11 +1,11 @@
 import math
 import pickle
 from collections import defaultdict, Counter
-from typing import DefaultDict, List, Optional, Set
+from typing import DefaultDict, List, Set, Tuple
 from pathlib import Path
 
 from .keyword_search import tokenize
-from .search_utils import load_movies, CACHE_PATH, BM25_K1, BM25_B
+from .search_utils import load_movies, CACHE_PATH, BM25_K1, BM25_B, DEFAULT_SEARCH_LIMIT
 
 class InvertedIndex():
     def __init__(self):
@@ -23,7 +23,6 @@ class InvertedIndex():
             return 0.0
         else:
             return total_length / len(self.doc_lengths)
-
 
     def __add_document(self, doc_id: int, text: str) -> None:
         tokens = tokenize(text)
@@ -80,6 +79,22 @@ class InvertedIndex():
             input_text = f"{title} {description}"
             self.__add_document(id, input_text)
             self.docmap[id] = movie
+    
+    def bm25(self, doc_id: int, term: str) -> float:
+        bm25_tf = self.get_bm25_tf(doc_id, term)
+        bm25_idf = self.get_bm25_idf(term)
+        return bm25_idf * bm25_tf
+    
+    def bm25_search(self, query: str, limit: int = DEFAULT_SEARCH_LIMIT) -> List[Tuple[int, int]]:
+        tokens = tokenize(query)
+        scores = {}
+        for idx, movie in enumerate(self.docmap, start=1):
+            score = 0    
+            for token in tokens:
+                score += self.bm25(idx, token)
+            scores[idx] = score
+        sorted_scores = sorted(scores.items(), key=lambda item: item[1], reverse=True)
+        return sorted_scores[:limit]
 
     def save(self) -> None:
         CACHE_PATH.mkdir(parents=True, exist_ok=True)
@@ -111,3 +126,17 @@ def bm25_tf_command(doc_id: int, term: str, k1: float | None = None, b: float | 
     index = InvertedIndex()
     index.load()
     return index.get_bm25_tf(doc_id, term, k1)
+
+def bm25_search_command(query: str) -> str:
+    index = InvertedIndex()
+    index.load()
+    return_str = ""
+    top_results = index.bm25_search(query)
+    for i, result in enumerate(top_results, start=1):
+        movie_idx = result[0]
+        movie_title = index.docmap[movie_idx]["title"]
+        bm25_score = result[1]
+        result_str = f"{i}. ({str(movie_idx)}) {movie_title} - Score:  {bm25_score:.2f}"
+        return_str += (result_str + "\n")
+    return return_str
+  
