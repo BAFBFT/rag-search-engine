@@ -42,7 +42,7 @@ class SemanticSearch():
         if movie_embeddings.is_file():
             self.embeddings = np.load(movie_embeddings)
             if len(self.embeddings) == len(documents):
-                return self.embeddings
+                return
             else:
                 raise ValueError("Cached movie embeddings is not consistent with documents.")
         else:
@@ -66,10 +66,11 @@ class SemanticSearch():
         for res in top_k_scores:
             res_info = {}
             res_info["score"] = res[0] # get the similarity score
-            res_info["title"] = self.documents[res[1]]["title"] # get the title by query documents
-            # res_info["description"] = self.documents[res[1]]["description"] # get the descripition by query documents
+            res_info["title"] = self.document_map[res[1]]["title"] # get the title by query documents
+            res_info["description"] = self.documents[res[1]]["description"] # get the descripition by query documents
             search_results.append(res_info)
         return search_results
+    
 def verify_model() -> None:
     search = SemanticSearch()
 

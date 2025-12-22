@@ -42,6 +42,7 @@ def main() -> None:
             res = search.search(args.query, args.limit)
             for i, r in enumerate(res, start=1):
                 print(f"{i}. {r["title"]} (score: {r["score"]:.4f})\n")
+                print(f"{r["description"]}")
         case _:
             parser.print_help()
 
