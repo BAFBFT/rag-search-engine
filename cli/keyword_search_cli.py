@@ -10,7 +10,6 @@ from lib.inverted_index import InvertedIndex, bm25_idf_command, bm25_tf_command,
 from lib.search_utils import BM25_K1
 
 def main() -> None:
-
     parser = argparse.ArgumentParser(description="Keyword Search CLI")
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
