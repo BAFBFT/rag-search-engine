@@ -12,7 +12,7 @@ def main() -> None:
     subparsers = parser.add_subparsers(dest="command", help="Available commands")
 
     subparsers.add_parser("verify", help="Verify the model has loaded correctly.")
-    
+
     embed_parser = subparsers.add_parser("embed_text", help="Embed text using embedding model.")
     embed_parser.add_argument("text", type=str, help="Text for embedding.")
 
@@ -24,6 +24,10 @@ def main() -> None:
     search_parser = subparsers.add_parser("search", help="Search the vectorDB using cosine similarity")
     search_parser.add_argument("query", type=str, help="Query for searching.")
     search_parser.add_argument("--limit", type=int, help="Number of results to return")
+
+    chunk_parser = subparsers.add_parser("chunk", help="Chunk the positional text")
+    chunk_parser.add_argument("text", type=str, help="Text for chunking.")
+    chunk_parser.add_argument("--chunk-size", type=int, default=200, help="Size of fixed chunks.")
 
     args = parser.parse_args()
     match args.command:
@@ -43,6 +47,25 @@ def main() -> None:
             for i, r in enumerate(res, start=1):
                 print(f"{i}. {r["title"]} (score: {r["score"]:.4f})\n")
                 print(f"{r["description"]}")
+        case "chunk":
+            print(f"Chunking {len(args.text)} characters")
+            words = args.text.split(' ')
+            chunks = []
+            count = 0
+            chunk = ""
+            for w in words:               
+                if count < args.chunk_size:
+                    chunk += (w + " ")
+                    count += 1
+                else:
+                    chunk.rstrip()
+                    chunks.append(chunk)
+                    chunk = w + " "                    
+                    count = 1
+            # final chunk
+            chunks.append(chunk)
+            for i, c in enumerate(chunks, start=1):
+                print(f"{i}. {c}")
         case _:
             parser.print_help()
 
