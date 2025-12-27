@@ -3,7 +3,7 @@
 import argparse
 
 from lib.search_utils import load_movies
-from lib.semantic_search import SemanticSearch, verify_model, embed_text, verify_embeddings, embed_query_text
+from lib.semantic_search import SemanticSearch, verify_model, embed_text, verify_embeddings, embed_query_text, chunk_text
 from pathlib import Path
 
 
@@ -28,6 +28,7 @@ def main() -> None:
     chunk_parser = subparsers.add_parser("chunk", help="Chunk the positional text")
     chunk_parser.add_argument("text", type=str, help="Text for chunking.")
     chunk_parser.add_argument("--chunk-size", type=int, default=200, help="Size of fixed chunks.")
+    chunk_parser.add_argument("--overlap", type=int, help="Define overlap for fixed size chunks.")
 
     args = parser.parse_args()
     match args.command:
@@ -49,21 +50,7 @@ def main() -> None:
                 print(f"{r["description"]}")
         case "chunk":
             print(f"Chunking {len(args.text)} characters")
-            words = args.text.split(' ')
-            chunks = []
-            count = 0
-            chunk = ""
-            for w in words:               
-                if count < args.chunk_size:
-                    chunk += (w + " ")
-                    count += 1
-                else:
-                    chunk.rstrip()
-                    chunks.append(chunk)
-                    chunk = w + " "                    
-                    count = 1
-            # final chunk
-            chunks.append(chunk)
+            chunks = chunk_text(args.text, args.chunk_size, args.overlap)
             for i, c in enumerate(chunks, start=1):
                 print(f"{i}. {c}")
         case _:
